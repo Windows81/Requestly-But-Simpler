@@ -1,0 +1,12 @@
+import "src/common/constants.js";
+import "src/common/dist/rulesStore.js";
+import "src/shared/constants.js";
+import "src/client/utils.js";
+import "src/client/ruleMatcher.js";
+import "src/client/scriptRuleHandler.js";
+import "src/client/userAgentRuleHandler.js";
+import "src/client/requestResponseRuleHandler.js";
+import "src/client/consoleLoggerHandler.js";
+import "src/client/sessionRecorder.js";
+import "src/client/ruleExecutionHandler.js";
+import "src/client/client.js";

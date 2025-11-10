@@ -24,8 +24,9 @@
         "https://app.requestly.com/*"
       ],
       "js": [
-        "generated/client/client.js"
+        "src/client/index.js"
       ],
+      "type": "module",
       "run_at": "document_start",
       "all_frames": true
     }
@@ -34,8 +35,26 @@
   "content_security_policy": "script-src 'self' https://cdn.firebase.com https://*.firebaseio.com https://ssl.google-analytics.com https://cdn.jsdelivr.net/npm/; object-src 'self'",
   "background": {
     "scripts": [
-      "background-bundled.js"
-    ]
+      "src/shared/utils.js",
+      "src/shared/constants.js",
+      "src/shared/ContentScriptMessageHandler.js",
+      "src/shared/DataStoreUtils.js",
+      "src/shared/userAgentLibrary.js",
+      "src/shared/DOMUtils.js",
+      "src/common/logger.js",
+      "src/common/utils.js",
+      "src/external/CircularQueue.js",
+      "src/external/tabService.js",
+      "src/modules/StorageService.js",
+      "src/modules/PreDefinedFunction.js",
+      "src/modules/PreDefinedFunctions.js",
+      "src/modules/RuleMatcher.js",
+      "src/modules/EventActions.js",
+      "src/background/flags.js",
+      "src/background/ExtensionIconManager.js",
+      "src/background/background.js"
+    ],
+    "type": "module"
   },
   "browser_action": {
     "default_icon": "resources/images/128x128.png",
