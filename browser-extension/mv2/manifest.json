@@ -19,14 +19,19 @@
         "http://*/*",
         "https://*/*"
       ],
-      "exclude_matches": [
-        "https://app.requestly.io/*",
-        "https://app.requestly.com/*"
-      ],
       "js": [
-        "src/client/index.js"
+        "src/shared/utils.js",
+        "src/shared/constants.js",
+        "src/client/utils.js",
+        "src/client/ruleMatcher.js",
+        "src/client/scriptRuleHandler.js",
+        "src/client/userAgentRuleHandler.js",
+        "src/client/requestResponseRuleHandler.js",
+        "src/client/consoleLoggerHandler.js",
+        "src/client/sessionRecorder.js",
+        "src/client/ruleExecutionHandler.js",
+        "src/client/client.js"
       ],
-      "type": "module",
       "run_at": "document_start",
       "all_frames": true
     }
