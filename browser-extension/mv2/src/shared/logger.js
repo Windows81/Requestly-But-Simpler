@@ -2,7 +2,7 @@ if (typeof isReactApp === "undefined") {
   var isReactApp = document?.getElementById("root") !== null;
 }
 
-var Logger = {
+var Logger = window.Logger = window.Logger || {
   enabled: false,
   ns: "Requestly: ",
 
@@ -43,10 +43,3 @@ if (urlParams.has("debug")) {
 }
 
 window.rq_debug = () => (Logger.enabled = true);
-
-export default Logger;
-if (!isReactApp) {
-  window.RQ = window.RQ || {};
-  window.RQ.components = window.RQ.components || {};
-  window.RQ.components.logger = Logger;
-}

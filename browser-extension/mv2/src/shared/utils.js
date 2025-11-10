@@ -1,4 +1,18 @@
 window.RQ = window.RQ || {};
+window.RQ.configs = {
+  "browser": "chrome",
+  "storageType": "local",
+  "contextMenuContexts": [
+    "browser_action"
+  ],
+  "env": "prod",
+  "WEB_URL": "https://app.requestly.io",
+  "OTHER_WEB_URLS": [
+    "https://app.requestly.com"
+  ],
+  "logLevel": "info"
+};
+
 RQ.Utils = RQ.Utils || {};
 
 RQ.Utils.regexFormat = "^/(.+)/(|i|g|ig|gi)$";
