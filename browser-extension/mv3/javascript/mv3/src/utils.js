@@ -1,0 +1,116 @@
+import { SourceKey, SourceOperator } from "common/types";
+import config from "common/config";
+import { matchSourceUrl } from "./common/ruleMatcher";
+import { getVariable, Variable } from "./service-worker/variable";
+import { ChangeType, getRecord, onRecordChange } from "common/storage";
+import { STORAGE_KEYS } from "common/constants";
+export const formatDate = (dateInMillis, format) => {
+    if (dateInMillis && format === "yyyy-mm-dd") {
+        const date = new Date(dateInMillis);
+        let monthString = String(date.getMonth() + 1), dateString = String(date.getDate());
+        dateString = dateString.length < 2 ? "0" + dateString : String(dateString);
+        monthString = monthString.length < 2 ? "0" + monthString : String(monthString);
+        return date.getFullYear() + "-" + monthString + "-" + dateString;
+    }
+    return "";
+};
+export const getAllSupportedWebURLs = () => {
+    const webURLsSet = new Set([config.WEB_URL, ...config.OTHER_WEB_URLS]);
+    return [...webURLsSet];
+};
+export const getAllSupportedAppOrigins = () => {
+    const supportedOriginsSet = new Set([]);
+    getAllSupportedWebURLs().forEach((url) => {
+        const origin = new URL(url).origin;
+        supportedOriginsSet.add(origin);
+    });
+    return [...supportedOriginsSet];
+};
+export const isAppURL = (url) => {
+    let origin = null;
+    try {
+        const urlObject = new URL(url);
+        origin = urlObject.origin;
+    }
+    catch (err) {
+        return false;
+    }
+    return !!url && getAllSupportedAppOrigins().includes(origin);
+};
+export const isBlacklistedURL = (url) => {
+    const blacklistedSources = [
+        ...getAllSupportedWebURLs().map((webUrl) => ({
+            key: SourceKey.URL,
+            operator: SourceOperator.CONTAINS,
+            value: webUrl,
+        })),
+        {
+            key: SourceKey.URL,
+            operator: SourceOperator.CONTAINS,
+            value: "__rq", // you can use __rq in the url to blacklist it
+        },
+    ];
+    return blacklistedSources.some((source) => matchSourceUrl(source, url));
+};
+export const generateUrlPattern = (urlString) => {
+    try {
+        const webUrlObj = new URL(urlString);
+        return `${webUrlObj.protocol}//${webUrlObj.host}/*`;
+    }
+    catch (error) {
+        console.error(`Invalid URL: ${urlString}`, error);
+        return null;
+    }
+};
+export const getUrlObject = (url) => {
+    // Url obj fails to construct when chrome:// or similar urls are passed
+    try {
+        const urlObj = new URL(url);
+        return urlObj;
+    }
+    catch (error) {
+        return null;
+    }
+};
+export const isExtensionEnabled = async () => {
+    return await getVariable(Variable.IS_EXTENSION_ENABLED, true);
+};
+export const debounce = (func, wait) => {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), wait);
+    };
+};
+let cachedBlockedDomains = null;
+export const cacheBlockedDomains = async () => {
+    const blockedDomains = await getRecord(STORAGE_KEYS.BLOCKED_DOMAINS);
+    cachedBlockedDomains = blockedDomains ?? [];
+};
+export const getBlockedDomains = async () => {
+    if (cachedBlockedDomains) {
+        return cachedBlockedDomains;
+    }
+    await cacheBlockedDomains();
+    return cachedBlockedDomains;
+};
+export const isUrlInBlockList = async (url) => {
+    const blockedDomains = await getBlockedDomains();
+    return blockedDomains?.some((domain) => {
+        return matchSourceUrl({
+            key: SourceKey.HOST,
+            value: `/^(.+\.)?${domain}$/i`, // to match the domain and all its subdomains
+            operator: SourceOperator.MATCHES,
+        }, url);
+    });
+};
+export const onBlockListChange = (callback) => {
+    onRecordChange({
+        keyFilter: STORAGE_KEYS.BLOCKED_DOMAINS,
+        changeTypes: [ChangeType.MODIFIED],
+    }, () => {
+        cacheBlockedDomains().then(() => {
+            callback?.();
+        });
+    });
+};
