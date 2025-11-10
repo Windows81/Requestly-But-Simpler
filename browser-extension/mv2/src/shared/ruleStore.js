@@ -1,4 +1,5 @@
 const STORAGE_TYPE = RQ.STORAGE_TYPE;
+RQ.RulesStore = RQ.RulesStore || {};
 
 RQ.RulesStore.getSuperObject = async () => {
     return new Promise((resolve) => {
@@ -6,14 +7,14 @@ RQ.RulesStore.getSuperObject = async () => {
     });
 };
 RQ.RulesStore.getAllRecords = async () => {
-    const superObject = await getSuperObject();
+    const superObject = await RQ.RulesStore.getSuperObject();
     return Object.values(superObject).filter((val) => !!val);
 };
 RQ.RulesStore.saveObject = async (object) => {
     await chrome.storage[STORAGE_TYPE].set(object);
 };
 RQ.RulesStore.saveRecord = async (key, record) => {
-    await saveObject({ [key]: record });
+    await RQ.RulesStore.saveObject({ [key]: record });
 };
 RQ.RulesStore.getRecord = async (key) => {
     return new Promise((resolve) => {
@@ -30,12 +31,13 @@ RQ.RulesStore.removeRecord = async (key) => {
 RQ.RulesStore.clearAllRecords = async () => {
     await chrome.storage[STORAGE_TYPE].clear();
 };
-export var ChangeType;
-(function (ChangeType) {
-    ChangeType[ChangeType["MODIFIED"] = 0] = "MODIFIED";
-    ChangeType[ChangeType["CREATED"] = 1] = "CREATED";
-    ChangeType[ChangeType["DELETED"] = 2] = "DELETED";
-})(ChangeType || (ChangeType = {}));
+
+const ChangeType = {
+	"MODIFIED": 0,
+	"CREATED": 1,
+	"DELETED": 2,
+}
+
 RQ.RulesStore.onRecordChange = (filters, callback) => {
     chrome.storage.onChanged.addListener((storeChanges, areaName) => {
         if (areaName === STORAGE_TYPE) {
@@ -84,19 +86,19 @@ const isGroup = (record) => {
 	return record && record.objectType === RQ.OBJECT_TYPES.GROUP;
 };
 RQ.RulesStore.getRules = async () => {
-	const records = await getAllRecords();
+	const records = await RQ.RulesStore.getAllRecords();
 	return records.filter(isRule);
 };
 RQ.RulesStore.getGroups = async () => {
-	const records = (await getAllRecords());
+	const records = (await RQ.RulesStore.getAllRecords());
 	return records.filter(isGroup);
 };
 RQ.RulesStore.getRule = async (id) => {
 	return getRecord(id);
 };
 RQ.RulesStore.getEnabledRules = async (ruleType) => {
-	const rules = await getRules();
-	const groups = await getGroups();
+	const rules = await RQ.RulesStore.getRules();
+	const groups = await RQ.RulesStore.getGroups();
 	return rules.filter((rule) => {
 		if (!rule.status || rule.status === RQ.RULE_STATUS.INACTIVE) {
 			return false;
@@ -115,7 +117,7 @@ RQ.RulesStore.getEnabledRules = async (ruleType) => {
 	});
 };
 RQ.RulesStore.onRuleOrGroupChange = (listener) => {
-	onRecordChange({
+	RQ.RulesStore.onRecordChange({
 		valueFilter: isRule,
 	}, (ruleChanges) => {
 		const shouldTriggerRuleChange = ruleChanges.some(({ changeType, oldValue, newValue }) => {
@@ -134,7 +136,7 @@ RQ.RulesStore.onRuleOrGroupChange = (listener) => {
 			listener();
 		}
 	});
-	onRecordChange({
+	RQ.RulesStore.onRecordChange({
 		valueFilter: isGroup,
 		changeTypes: [ChangeType.MODIFIED], // for newly created or deleted group, there will already be a groupId change in rule
 	}, (groupChanges) => {
@@ -147,10 +149,10 @@ RQ.RulesStore.onRuleOrGroupChange = (listener) => {
 	});
 };
 RQ.RulesStore.checkIfNoRulesPresent = async () => {
-	const rules = await getRules();
+	const rules = await RQ.RulesStore.getRules();
 	return rules.length === 0;
 };
 RQ.RulesStore.getRulesAndGroups = async () => {
-	const [rules, groups] = await Promise.all([getRules(), getGroups()]);
+	const [rules, groups] = await Promise.all([RQ.RulesStore.getRules(), RQ.RulesStore.getGroups()]);
 	return { rules, groups };
 };
