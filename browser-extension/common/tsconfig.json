@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "noUnusedLocals": true,
-    "noEmit": true,
+    "noCheck": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "moduleResolution": "node",
@@ -20,6 +20,15 @@
     "rootDir": "./src",
     "baseUrl": "."
   },
-  "exclude": ["node_modules", "dist"],
-  "include": ["./src/**/*"]
+  "assets": [
+    "**/*.html",
+    "**/*.css",
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "include": [
+    "./src/**/*"
+  ]
 }

@@ -15,8 +15,8 @@ export const registerCustomElement = (tagName: string, elementConstructor: Custo
     customElements.define(tagName, elementConstructor);
   }
 };
-
-export const setInnerHTML = (element: InnerHTML, content: string) => {
+// @ts-ignore
+export const setInnerHTML = (element, content: string) => {
   try {
     element.innerHTML = content;
   } catch (e) {

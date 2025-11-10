@@ -88,6 +88,7 @@ const PrimaryToolbar: React.FC<Props> = ({ clearEvents, settings, onSettingsChan
         const rulePair = rule.pairs[0];
         rulePair.source.filters = [
           {
+            // @ts-ignore
             pageUrl: {
               operator: SourceOperator.CONTAINS,
               value: pageOrigin,

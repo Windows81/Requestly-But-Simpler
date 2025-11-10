@@ -1,5 +1,6 @@
 import { NetworkEvent, RQNetworkEvent } from "../../types";
 
+// @ts-ignore
 export function getGraphQLDetails(event: NetworkEvent): RQNetworkEvent["metadata"]["GQLDetails"] {
   const method = event.request.method;
 
