@@ -53,6 +53,8 @@ RQ.CLIENT_MESSAGES = {
   START_IMPLICIT_RULE_TESTING: "startImplicitRuleTesting",
 };
 
+RQ.STORAGE_TYPE = "local";
+
 RQ.CUSTOM_HEADER_PREFIX = "x-rq-";
 
 /*

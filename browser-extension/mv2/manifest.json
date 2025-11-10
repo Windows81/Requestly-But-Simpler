@@ -10,7 +10,9 @@
         "https://app.requestly.com/*"
       ],
       "js": [
-        "src/pages/main.js"
+        "src/shared/utils.js",
+        "src/shared/constants.js",
+        "src/pages/init.js"
       ],
       "run_at": "document_start"
     },
@@ -22,6 +24,7 @@
       "js": [
         "src/shared/utils.js",
         "src/shared/constants.js",
+        "src/shared/ruleStore.js",
         "src/client/utils.js",
         "src/client/ruleMatcher.js",
         "src/client/scriptRuleHandler.js",
