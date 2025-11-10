@@ -62,7 +62,6 @@ RQ.CUSTOM_HEADER_PREFIX = "x-rq-";
 */
 RQ.IGNORED_HEADERS_ON_REDIRECT = ["Authorization"];
 
-
 RQ.APP_MODES = {
   DESKTOP: "DESKTOP",
   EXTENSION: "EXTENSION",
@@ -291,3 +290,5 @@ RQ.CLIENT_SOURCE = {
   REQUESTLY: "requestly:client",
   SESSIONBEAR: "sessionbear:client",
 };
+
+RQ.flags = ["response_rule_enabled"];
