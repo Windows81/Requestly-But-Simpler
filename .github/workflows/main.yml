@@ -1,0 +1,48 @@
+name: Build
+on:
+  push:
+    branches:
+      - "*"
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      matrix:
+        manifest: ["mv2", "mv3"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Release Data
+        shell: bash
+        run: |
+          export LC_ALL=en_US.utf8
+          GIT_COMMIT_ID=$(echo "${{ github.sha }}" |  cut -c 1-7)
+          UPDATE_TIME=$(echo ${{ github.event.repository.updated_at }} | sed 's/[:-]//g')
+          echo "tag_name=v${UPDATE_TIME}" >> $GITHUB_ENV
+          echo "release_name=${UPDATE_TIME} (${GIT_COMMIT_ID})" >> $GITHUB_ENV
+
+      - name: Cache Node.js Modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          npm install -g crx;
+          cd browser-extension/${{ matrix.manifest }}
+          crx pack -o "./requestly-${{ matrix.manifest }}.crx";
+
+      - name: Release with Notes
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ".*.crx"
+          name: ${{ env.release_name }}
+          tag_name: ${{ env.tag_name }}
+          generate_release_notes: true
+          overwrite_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
