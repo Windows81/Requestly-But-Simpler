@@ -39,7 +39,7 @@ jobs:
       - name: Release with Notes
         uses: softprops/action-gh-release@v2
         with:
-          files: ".*.crx"
+          files: "*.crx"
           name: ${{ env.release_name }}
           tag_name: ${{ env.tag_name }}
           generate_release_notes: true
