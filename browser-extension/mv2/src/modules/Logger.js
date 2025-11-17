@@ -1,8 +1,4 @@
-if (typeof isReactApp === "undefined") {
-  var isReactApp = document?.getElementById("root") !== null;
-}
-
-var Logger = window.Logger = window.Logger || {
+var Logger = (window.Logger = {
   enabled: false,
   ns: "Requestly: ",
 
@@ -35,7 +31,7 @@ var Logger = window.Logger = window.Logger || {
       console.timeLog(...args);
     }
   },
-};
+});
 
 let urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has("debug")) {

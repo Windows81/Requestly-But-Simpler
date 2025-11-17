@@ -1,22 +1,22 @@
-RQ.UserAgentRuleHandler = {};
+const UserAgentRuleHandler = (RQ.UserAgentRuleHandler = {});
 
-RQ.UserAgentRuleHandler.setup = function () {
+UserAgentRuleHandler.setup = function () {
   const message = {
     action: RQ.CLIENT_MESSAGES.GET_USER_AGENT_RULE_PAIRS,
     url: window.location.href,
   };
   chrome.runtime.sendMessage(message, function (rulePairs) {
     if (rulePairs && rulePairs.constructor === Array && rulePairs.length > 0) {
-      RQ.UserAgentRuleHandler.handleRulePairs(rulePairs);
+      UserAgentRuleHandler.handleRulePairs(rulePairs);
     }
   });
 };
 
-RQ.UserAgentRuleHandler.handleRulePairs = function (rulePairs) {
+UserAgentRuleHandler.handleRulePairs = function (rulePairs) {
   var finalUserAgentRulePair = rulePairs[rulePairs.length - 1], // only last user agent will finally be applied
     userAgent = finalUserAgentRulePair.userAgent,
-    platform = RQ.UserAgentRuleHandler.getPlatformFromUserAgent(userAgent),
-    vendor = RQ.UserAgentRuleHandler.getVendorFromUserAgent(userAgent);
+    platform = UserAgentRuleHandler.getPlatformFromUserAgent(userAgent),
+    vendor = UserAgentRuleHandler.getVendorFromUserAgent(userAgent);
 
   RQ.ClientUtils.executeJS(
     `Object.defineProperty(window.navigator, 'userAgent', { get: function() { return '${userAgent}'; } });`
@@ -33,7 +33,7 @@ RQ.UserAgentRuleHandler.handleRulePairs = function (rulePairs) {
   }
 };
 
-RQ.UserAgentRuleHandler.getPlatformFromUserAgent = function (userAgent) {
+UserAgentRuleHandler.getPlatformFromUserAgent = function (userAgent) {
   var PLATFORMS = {
     Macintosh: "MacIntel",
     Android: "Android",
@@ -50,7 +50,7 @@ RQ.UserAgentRuleHandler.getPlatformFromUserAgent = function (userAgent) {
   }
 };
 
-RQ.UserAgentRuleHandler.getVendorFromUserAgent = function (userAgent) {
+UserAgentRuleHandler.getVendorFromUserAgent = function (userAgent) {
   var VENDORS = {
     iPhone: "Apple Computer, Inc.",
     iPad: "Apple Computer, Inc.",

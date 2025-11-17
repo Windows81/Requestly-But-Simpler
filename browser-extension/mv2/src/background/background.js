@@ -1,5 +1,4 @@
-let BG = {};
-BG = window.BG = {
+let BG = window.BG = {
   Methods: {},
   statusSettings: {
     id: RQ.STORAGE_KEYS.REQUESTLY_SETTINGS,
@@ -1875,11 +1874,8 @@ BG.Methods.init = function () {
   EventActions.startPeriodicEventWriter();
 };
 
-// Background Initialization Code
-(function () {
-  try {
-    BG.Methods.init();
-  } catch (e) {
-    // Do nothing
-  }
-})();
+try {
+  BG.Methods.init();
+} catch (e) {
+  // Do nothing
+}

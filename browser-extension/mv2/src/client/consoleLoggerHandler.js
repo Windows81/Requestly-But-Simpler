@@ -1,47 +1,46 @@
-RQ.ConsoleLogger = {
-  loggingStarted: false,
-};
+const ConsoleLogger = (RQ.ConsoleLogger = {});
+ConsoleLogger.loggingStarted = false;
 
-RQ.ConsoleLogger.setup = () => {
+ConsoleLogger.setup = () => {
   window.addEventListener("message", function (event) {
     if (event.source !== window || event.data.source !== "requestly:consoleLogger") {
       return;
     }
 
     if (event.data.action === "showInitialMessage") {
-      RQ.ConsoleLogger.showInitialMessage(event.data.payload?.isConsoleLoggerEnabled);
+      ConsoleLogger.showInitialMessage(event.data.payload?.isConsoleLoggerEnabled);
     }
   });
 
   chrome.runtime.onMessage.addListener(function (message) {
     if (message.action === RQ.CLIENT_MESSAGES.PRINT_CONSOLE_LOGS) {
-      RQ.ConsoleLogger.handleMessage(message);
+      ConsoleLogger.handleMessage(message);
     }
   });
 };
 
-RQ.ConsoleLogger.showInitialMessage = (isConsoleLoggerEnabled) => {
-  if (RQ.ConsoleLogger.loggingStarted) {
+ConsoleLogger.showInitialMessage = (isConsoleLoggerEnabled) => {
+  if (ConsoleLogger.loggingStarted) {
     return;
   }
 
   if (isConsoleLoggerEnabled) {
-    RQ.ConsoleLogger.log(
-      `Applied rules will be logged in console. You may disable the feature from: ${RQ.ConsoleLogger.getSettingsUrl()}`
+    ConsoleLogger.log(
+      `Applied rules will be logged in console. You may disable the feature from: ${ConsoleLogger.getSettingsUrl()}`
     );
   } else {
-    RQ.ConsoleLogger.log(
-      `Applied some rules on this page. You may enable logging in console from: ${RQ.ConsoleLogger.getSettingsUrl()}`
+    ConsoleLogger.log(
+      `Applied some rules on this page. You may enable logging in console from: ${ConsoleLogger.getSettingsUrl()}`
     );
   }
 
-  RQ.ConsoleLogger.loggingStarted = true;
+  ConsoleLogger.loggingStarted = true;
 };
 
-RQ.ConsoleLogger.handleMessage = (message) => {
-  if (!RQ.ConsoleLogger.loggingStarted) {
+ConsoleLogger.handleMessage = (message) => {
+  if (!ConsoleLogger.loggingStarted) {
     if (window === window.top) {
-      RQ.ConsoleLogger.showInitialMessage(message.isConsoleLoggerEnabled);
+      ConsoleLogger.showInitialMessage(message.isConsoleLoggerEnabled);
     } else {
       window.top.postMessage(
         {
@@ -51,21 +50,21 @@ RQ.ConsoleLogger.handleMessage = (message) => {
         },
         "*"
       );
-      RQ.ConsoleLogger.loggingStarted = true;
+      ConsoleLogger.loggingStarted = true;
     }
   }
 
   if (message.isConsoleLoggerEnabled) {
-    RQ.ConsoleLogger.log(
+    ConsoleLogger.log(
       `Applied rule %c${message.rule.name}%c on request URL: ${message.requestDetails.url}`,
       "color: green; font-weight: bold; font-style: italic",
       null,
-      RQ.ConsoleLogger.buildRequestDetailsObject(message.requestDetails)
+      ConsoleLogger.buildRequestDetailsObject(message.requestDetails)
     );
   }
 };
 
-RQ.ConsoleLogger.log = (text, ...args) => {
+ConsoleLogger.log = (text, ...args) => {
   console.log(
     `%cRequestly%c ${text}`,
     "color: #3c89e8; padding: 1px 5px; border-radius: 4px; border: 1px solid #91caff;",
@@ -74,7 +73,7 @@ RQ.ConsoleLogger.log = (text, ...args) => {
   );
 };
 
-RQ.ConsoleLogger.buildRequestDetailsObject = (requestDetails) => {
+ConsoleLogger.buildRequestDetailsObject = (requestDetails) => {
   const requestDetailsObject = {
     method: requestDetails.method,
     timestamp: new Date(requestDetails.timeStamp).toLocaleString(),
@@ -87,10 +86,10 @@ RQ.ConsoleLogger.buildRequestDetailsObject = (requestDetails) => {
   return requestDetailsObject;
 };
 
-RQ.ConsoleLogger.getSettingsUrl = () => {
+ConsoleLogger.getSettingsUrl = () => {
   return RQ.configs.WEB_URL + "/settings";
 };
 
-RQ.ConsoleLogger.getRuleEditorUrl = (ruleId) => {
+ConsoleLogger.getRuleEditorUrl = (ruleId) => {
   return RQ.CONSTANTS.RULES_PAGE_URL + "#edit/" + ruleId;
 };

@@ -1,6 +1,6 @@
-RQ.ClientUtils = RQ.ClientUtils || {};
+const ClientUtils = (RQ.ClientUtils = {});
 
-RQ.ClientUtils.executeJS = function (code, attributes, shouldRemove) {
+ClientUtils.executeJS = function (code, attributes, shouldRemove) {
   const script = document.createElement("script");
   if (attributes) {
     attributes.forEach(({ name: attrName, value: attrVal }) => {
@@ -9,7 +9,7 @@ RQ.ClientUtils.executeJS = function (code, attributes, shouldRemove) {
   } else {
     script.type = "text/javascript";
   }
-  script.classList.add(RQ.ClientUtils.getScriptClassAttribute());
+  script.classList.add(ClientUtils.getScriptClassAttribute());
 
   script.appendChild(document.createTextNode(code));
   const parent = document.head || document.documentElement;
@@ -20,7 +20,7 @@ RQ.ClientUtils.executeJS = function (code, attributes, shouldRemove) {
   }
 };
 
-RQ.ClientUtils.addJSFromURL = function (src, attributes, callback) {
+ClientUtils.addJSFromURL = function (src, attributes, callback) {
   var script = document.createElement("script");
   if (attributes) {
     attributes.forEach(({ name: attrName, value: attrVal }) => {
@@ -30,7 +30,7 @@ RQ.ClientUtils.addJSFromURL = function (src, attributes, callback) {
     script.type = "text/javascript";
   }
   script.src = src;
-  script.classList.add(RQ.ClientUtils.getScriptClassAttribute());
+  script.classList.add(ClientUtils.getScriptClassAttribute());
 
   if (typeof callback === "function") {
     script.onload = callback;
@@ -40,7 +40,7 @@ RQ.ClientUtils.addJSFromURL = function (src, attributes, callback) {
   return script;
 };
 
-RQ.ClientUtils.embedCSS = function (css, attributes) {
+ClientUtils.embedCSS = function (css, attributes) {
   var style = document.createElement("style");
   style.appendChild(document.createTextNode(css));
 
@@ -50,13 +50,13 @@ RQ.ClientUtils.embedCSS = function (css, attributes) {
     });
   }
 
-  style.classList.add(RQ.ClientUtils.getScriptClassAttribute());
+  style.classList.add(ClientUtils.getScriptClassAttribute());
 
   (document.head || document.documentElement).appendChild(style);
   return style;
 };
 
-RQ.ClientUtils.addCSSFromURL = function (src, attributes) {
+ClientUtils.addCSSFromURL = function (src, attributes) {
   var link = document.createElement("link");
 
   if (attributes) {
@@ -69,13 +69,13 @@ RQ.ClientUtils.addCSSFromURL = function (src, attributes) {
   }
 
   link.href = src;
-  link.classList.add(RQ.ClientUtils.getScriptClassAttribute());
+  link.classList.add(ClientUtils.getScriptClassAttribute());
 
   (document.head || document.documentElement).appendChild(link);
   return link;
 };
 
-RQ.ClientUtils.onPageLoad = function () {
+ClientUtils.onPageLoad = function () {
   return new Promise(function (resolve) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", resolve);
@@ -85,15 +85,15 @@ RQ.ClientUtils.onPageLoad = function () {
   });
 };
 
-RQ.ClientUtils.getScriptClassAttribute = function () {
+ClientUtils.getScriptClassAttribute = function () {
   return RQ.PUBLIC_NAMESPACE + "SCRIPT";
 };
 
-RQ.ClientUtils.isHTMLDocument = function () {
+ClientUtils.isHTMLDocument = function () {
   return document.doctype?.name === "html" || document instanceof HTMLDocument; // HTMLDocument can't be replaced with Document, as it fails for XML
 };
 
-RQ.ClientUtils.sendExecutionEventToBackground = (eventName, eventParams) => {
+ClientUtils.sendExecutionEventToBackground = (eventName, eventParams) => {
   const eventTs = Date.now();
   eventParams["log_source"] = "extension";
 
@@ -107,6 +107,6 @@ RQ.ClientUtils.sendExecutionEventToBackground = (eventName, eventParams) => {
   });
 };
 
-RQ.ClientUtils.isAppPage = () => {
+ClientUtils.isAppPage = () => {
   return false;
 };

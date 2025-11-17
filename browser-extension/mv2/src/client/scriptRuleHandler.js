@@ -1,13 +1,13 @@
-RQ.ScriptRuleHandler = {};
+const ScriptRuleHandler = (RQ.ScriptRuleHandler = {});
 
-RQ.ScriptRuleHandler.setup = function () {
+ScriptRuleHandler.setup = function () {
   const message = {
     action: RQ.CLIENT_MESSAGES.GET_SCRIPT_RULES,
     url: window.location.href,
   };
   chrome.runtime.sendMessage(message, function (rules) {
     if (rules && rules.constructor === Array) {
-      RQ.ScriptRuleHandler.handleRules(rules);
+      ScriptRuleHandler.handleRules(rules);
 
       chrome.runtime.sendMessage({
         action: RQ.CLIENT_MESSAGES.NOTIFY_RULES_APPLIED,
@@ -22,7 +22,7 @@ RQ.ScriptRuleHandler.setup = function () {
   });
 };
 
-RQ.ScriptRuleHandler.handleRules = function (rules) {
+ScriptRuleHandler.handleRules = function (rules) {
   return new Promise(function (resolve) {
     var libraries = [],
       scripts = [];
@@ -48,31 +48,31 @@ RQ.ScriptRuleHandler.handleRules = function (rules) {
       return !script.codeType || script.codeType === RQ.SCRIPT_CODE_TYPES.JS;
     });
 
-    RQ.ScriptRuleHandler.handleCSSScripts(cssScripts)
+    ScriptRuleHandler.handleCSSScripts(cssScripts)
       .then(function () {
-        return RQ.ScriptRuleHandler.handleJSLibraries(libraries);
+        return ScriptRuleHandler.handleJSLibraries(libraries);
       })
       .then(function () {
-        return RQ.ScriptRuleHandler.handleJSScripts(jsScripts);
+        return ScriptRuleHandler.handleJSScripts(jsScripts);
       })
       .then(resolve);
   });
 };
 
-RQ.ScriptRuleHandler.handleCSSScripts = function (cssScripts) {
+ScriptRuleHandler.handleCSSScripts = function (cssScripts) {
   return new Promise(function (resolve) {
-    cssScripts.forEach(RQ.ScriptRuleHandler.includeCSS);
+    cssScripts.forEach(ScriptRuleHandler.includeCSS);
     resolve();
   });
 };
 
-RQ.ScriptRuleHandler.handleJSLibraries = function (libraries) {
+ScriptRuleHandler.handleJSLibraries = function (libraries) {
   return new Promise(function (resolve) {
-    RQ.ScriptRuleHandler.addLibraries(libraries, resolve);
+    ScriptRuleHandler.addLibraries(libraries, resolve);
   });
 };
 
-RQ.ScriptRuleHandler.handleJSScripts = function (jsScripts) {
+ScriptRuleHandler.handleJSScripts = function (jsScripts) {
   return new Promise(function (resolve) {
     var prePageLoadScripts = [],
       postPageLoadScripts = [];
@@ -85,15 +85,15 @@ RQ.ScriptRuleHandler.handleJSScripts = function (jsScripts) {
       }
     });
 
-    RQ.ScriptRuleHandler.includeJSScriptsInOrder(prePageLoadScripts, function () {
+    ScriptRuleHandler.includeJSScriptsInOrder(prePageLoadScripts, function () {
       RQ.ClientUtils.onPageLoad().then(function () {
-        RQ.ScriptRuleHandler.includeJSScriptsInOrder(postPageLoadScripts, resolve);
+        ScriptRuleHandler.includeJSScriptsInOrder(postPageLoadScripts, resolve);
       });
     });
   });
 };
 
-RQ.ScriptRuleHandler.addLibraries = function (libraries, callback, index) {
+ScriptRuleHandler.addLibraries = function (libraries, callback, index) {
   index = index || 0;
 
   if (index >= libraries.length) {
@@ -104,7 +104,7 @@ RQ.ScriptRuleHandler.addLibraries = function (libraries, callback, index) {
   var libraryKey = libraries[index],
     library = RQ.SCRIPT_LIBRARIES[libraryKey],
     addNextLibraries = function () {
-      RQ.ScriptRuleHandler.addLibraries(libraries, callback, index + 1);
+      ScriptRuleHandler.addLibraries(libraries, callback, index + 1);
     };
 
   if (library) {
@@ -114,7 +114,7 @@ RQ.ScriptRuleHandler.addLibraries = function (libraries, callback, index) {
   }
 };
 
-RQ.ScriptRuleHandler.includeJSScriptsInOrder = function (scripts, callback, index) {
+ScriptRuleHandler.includeJSScriptsInOrder = function (scripts, callback, index) {
   index = index || 0;
 
   if (index >= scripts.length) {
@@ -122,12 +122,12 @@ RQ.ScriptRuleHandler.includeJSScriptsInOrder = function (scripts, callback, inde
     return;
   }
 
-  RQ.ScriptRuleHandler.includeJS(scripts[index], function () {
-    RQ.ScriptRuleHandler.includeJSScriptsInOrder(scripts, callback, index + 1);
+  ScriptRuleHandler.includeJS(scripts[index], function () {
+    ScriptRuleHandler.includeJSScriptsInOrder(scripts, callback, index + 1);
   });
 };
 
-RQ.ScriptRuleHandler.includeJS = function (script, callback) {
+ScriptRuleHandler.includeJS = function (script, callback) {
   if (!script.value) throw new Error("Script value is empty");
 
   if (script.type === RQ.SCRIPT_TYPES.URL) {
@@ -142,7 +142,7 @@ RQ.ScriptRuleHandler.includeJS = function (script, callback) {
   typeof callback === "function" && callback();
 };
 
-RQ.ScriptRuleHandler.includeCSS = function (script, callback) {
+ScriptRuleHandler.includeCSS = function (script, callback) {
   if (script.type === RQ.SCRIPT_TYPES.URL) {
     RQ.ClientUtils.addCSSFromURL(script.value, script.attributes);
     return;

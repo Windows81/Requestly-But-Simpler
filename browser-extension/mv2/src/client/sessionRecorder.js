@@ -1,23 +1,23 @@
-RQ.SessionRecorder = {};
+const SessionRecorder = (RQ.SessionRecorder = {});
 
-RQ.SessionRecorder.setup = () => {
-  RQ.SessionRecorder.isInitialized = false;
-  RQ.SessionRecorder.isRecording = false;
-  RQ.SessionRecorder.isExplicitRecording = false;
-  RQ.SessionRecorder.markRecordingIcon = false;
-  RQ.SessionRecorder.widgetPosition = null;
-  RQ.SessionRecorder.showWidget = false;
-  RQ.SessionRecorder.recordingStartTime = null;
-  RQ.SessionRecorder.sendResponseCallbacks = {};
-  RQ.SessionRecorder.recordingMode;
+SessionRecorder.setup = () => {
+  SessionRecorder.isInitialized = false;
+  SessionRecorder.isRecording = false;
+  SessionRecorder.isExplicitRecording = false;
+  SessionRecorder.markRecordingIcon = false;
+  SessionRecorder.widgetPosition = null;
+  SessionRecorder.showWidget = false;
+  SessionRecorder.recordingStartTime = null;
+  SessionRecorder.sendResponseCallbacks = {};
+  SessionRecorder.recordingMode;
 
-  const isTopDocument = !RQ.SessionRecorder.isIframe();
+  const isTopDocument = !SessionRecorder.isIframe();
 
   chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
     // messages for all the frames
     switch (message.action) {
       case RQ.CLIENT_MESSAGES.START_RECORDING:
-        RQ.SessionRecorder.startRecording(message.payload).then(() => {
+        SessionRecorder.startRecording(message.payload).then(() => {
           // only the top document should send confirmation
           if (isTopDocument) {
             sendResponse();
@@ -26,7 +26,7 @@ RQ.SessionRecorder.setup = () => {
         return true;
 
       case RQ.CLIENT_MESSAGES.STOP_RECORDING:
-        RQ.SessionRecorder.sendMessageToClient("stopRecording", null);
+        SessionRecorder.sendMessageToClient("stopRecording", null);
         break;
     }
 
@@ -34,18 +34,18 @@ RQ.SessionRecorder.setup = () => {
     if (isTopDocument) {
       switch (message.action) {
         case RQ.CLIENT_MESSAGES.IS_RECORDING_SESSION:
-          sendResponse(RQ.SessionRecorder.isRecording);
+          sendResponse(SessionRecorder.isRecording);
           break;
 
         case RQ.CLIENT_MESSAGES.IS_EXPLICIT_RECORDING_SESSION:
-          sendResponse(RQ.SessionRecorder.isExplicitRecording);
+          sendResponse(SessionRecorder.isExplicitRecording);
           break;
 
         case RQ.CLIENT_MESSAGES.GET_TAB_SESSION:
-          RQ.SessionRecorder.sendMessageToClient("getSessionData", null, (session) =>
+          SessionRecorder.sendMessageToClient("getSessionData", null, (session) =>
             sendResponse({
               ...session,
-              recordingMode: RQ.SessionRecorder.recordingMode,
+              recordingMode: SessionRecorder.recordingMode,
             })
           );
           return true;
@@ -54,7 +54,7 @@ RQ.SessionRecorder.setup = () => {
   });
 };
 
-RQ.SessionRecorder.startRecording = async (options = {}) => {
+SessionRecorder.startRecording = async (options = {}) => {
   const {
     config,
     previousSession,
@@ -66,57 +66,57 @@ RQ.SessionRecorder.startRecording = async (options = {}) => {
     markRecordingIcon = true,
   } = options;
 
-  await RQ.SessionRecorder.initialize();
+  await SessionRecorder.initialize();
 
-  if (!explicit && RQ.SessionRecorder.isExplicitRecording) {
+  if (!explicit && SessionRecorder.isExplicitRecording) {
     return;
   }
 
-  RQ.SessionRecorder.sendMessageToClient("startRecording", {
-    relayEventsToTop: RQ.SessionRecorder.isIframe(),
+  SessionRecorder.sendMessageToClient("startRecording", {
+    relayEventsToTop: SessionRecorder.isIframe(),
     console: true,
     network: true,
     maxDuration: (config?.maxDuration || 5) * 60 * 1000, // minutes -> milliseconds
-    previousSession: !RQ.SessionRecorder.isIframe() ? previousSession : null,
+    previousSession: !SessionRecorder.isIframe() ? previousSession : null,
   });
 
   if (notify) {
-    RQ.SessionRecorder.showToast();
+    SessionRecorder.showToast();
   }
 
-  RQ.SessionRecorder.isExplicitRecording = explicit;
-  RQ.SessionRecorder.widgetPosition = widgetPosition;
-  RQ.SessionRecorder.showWidget = showWidget;
-  RQ.SessionRecorder.recordingMode = explicit ? "manual" : "auto";
-  RQ.SessionRecorder.markRecordingIcon = markRecordingIcon;
+  SessionRecorder.isExplicitRecording = explicit;
+  SessionRecorder.widgetPosition = widgetPosition;
+  SessionRecorder.showWidget = showWidget;
+  SessionRecorder.recordingMode = explicit ? "manual" : "auto";
+  SessionRecorder.markRecordingIcon = markRecordingIcon;
 
   if (explicit) {
-    RQ.SessionRecorder.recordingStartTime = recordingStartTime ?? Date.now();
-    RQ.SessionRecorder.hideAutoModeWidget();
+    SessionRecorder.recordingStartTime = recordingStartTime ?? Date.now();
+    SessionRecorder.hideAutoModeWidget();
   }
 };
 
-RQ.SessionRecorder.initialize = () => {
+SessionRecorder.initialize = () => {
   return new Promise((resolve) => {
-    if (RQ.SessionRecorder.isInitialized) {
+    if (SessionRecorder.isInitialized) {
       resolve();
     }
 
     RQ.ClientUtils.addJSFromURL(chrome.runtime.getURL("libs/requestly-web-sdk.js"), null, () => {
-      RQ.ClientUtils.executeJS(`(${RQ.SessionRecorder.bootstrapClient.toString()})('${RQ.PUBLIC_NAMESPACE}')`);
-      RQ.SessionRecorder.addMessageListeners();
-      RQ.SessionRecorder.isInitialized = true;
+      RQ.ClientUtils.executeJS(`(${SessionRecorder.bootstrapClient.toString()})('${RQ.PUBLIC_NAMESPACE}')`);
+      SessionRecorder.addMessageListeners();
+      SessionRecorder.isInitialized = true;
       resolve();
     });
   });
 };
 
-RQ.SessionRecorder.isIframe = () => {
+SessionRecorder.isIframe = () => {
   return window.top !== window;
 };
 
-RQ.SessionRecorder.addMessageListeners = () => {
-  if (RQ.SessionRecorder.isIframe()) {
+SessionRecorder.addMessageListeners = () => {
+  if (SessionRecorder.isIframe()) {
     return;
   }
 
@@ -126,31 +126,31 @@ RQ.SessionRecorder.addMessageListeners = () => {
     }
 
     if (event.data.response) {
-      RQ.SessionRecorder.sendResponseToRuntime(event.data.action, event.data.payload);
+      SessionRecorder.sendResponseToRuntime(event.data.action, event.data.payload);
     } else if (event.data.action === "sessionRecordingStarted") {
-      RQ.SessionRecorder.isRecording = true;
+      SessionRecorder.isRecording = true;
 
       chrome.runtime.sendMessage({
         action: RQ.CLIENT_MESSAGES.NOTIFY_SESSION_RECORDING_STARTED,
-        markRecordingIcon: RQ.SessionRecorder.markRecordingIcon,
+        markRecordingIcon: SessionRecorder.markRecordingIcon,
       });
 
-      if (RQ.SessionRecorder.showWidget) {
-        if (RQ.SessionRecorder.isExplicitRecording) {
-          RQ.SessionRecorder.showManualModeRecordingWidget();
+      if (SessionRecorder.showWidget) {
+        if (SessionRecorder.isExplicitRecording) {
+          SessionRecorder.showManualModeRecordingWidget();
         } else {
-          RQ.SessionRecorder.showAutoModeRecordingWidget();
+          SessionRecorder.showAutoModeRecordingWidget();
         }
       }
     } else if (event.data.action === "sessionRecordingStopped") {
-      RQ.SessionRecorder.isRecording = false;
-      RQ.SessionRecorder.isExplicitRecording = false;
-      RQ.SessionRecorder.showWidget = false;
-      RQ.SessionRecorder.recordingStartTime = null;
-      RQ.SessionRecorder.markRecordingIcon = false;
+      SessionRecorder.isRecording = false;
+      SessionRecorder.isExplicitRecording = false;
+      SessionRecorder.showWidget = false;
+      SessionRecorder.recordingStartTime = null;
+      SessionRecorder.markRecordingIcon = false;
 
-      RQ.SessionRecorder.hideManualModeWidget();
-      RQ.SessionRecorder.hideAutoModeWidget();
+      SessionRecorder.hideManualModeWidget();
+      SessionRecorder.hideAutoModeWidget();
 
       chrome.runtime.sendMessage({
         action: RQ.CLIENT_MESSAGES.NOTIFY_SESSION_RECORDING_STOPPED,
@@ -159,29 +159,29 @@ RQ.SessionRecorder.addMessageListeners = () => {
   });
 
   window.addEventListener("beforeunload", () => {
-    RQ.SessionRecorder.sendMessageToClient("getSessionData", null, (session) => {
+    SessionRecorder.sendMessageToClient("getSessionData", null, (session) => {
       chrome.runtime.sendMessage({
         action: RQ.CLIENT_MESSAGES.CACHE_RECORDED_SESSION_ON_PAGE_UNLOAD,
         payload: {
           session,
-          widgetPosition: RQ.SessionRecorder.widgetPosition,
-          recordingMode: RQ.SessionRecorder.recordingMode,
-          recordingStartTime: RQ.SessionRecorder.recordingStartTime,
+          widgetPosition: SessionRecorder.widgetPosition,
+          recordingMode: SessionRecorder.recordingMode,
+          recordingStartTime: SessionRecorder.recordingStartTime,
         },
       });
     });
   });
 };
 
-RQ.SessionRecorder.sendResponseToRuntime = (action, payload) => {
-  RQ.SessionRecorder.sendResponseCallbacks[action]?.(payload);
-  delete RQ.SessionRecorder.sendResponseCallbacks[action];
+SessionRecorder.sendResponseToRuntime = (action, payload) => {
+  SessionRecorder.sendResponseCallbacks[action]?.(payload);
+  delete SessionRecorder.sendResponseCallbacks[action];
 };
 
-RQ.SessionRecorder.sendMessageToClient = (action, payload, sendResponseCallback) => {
+SessionRecorder.sendMessageToClient = (action, payload, sendResponseCallback) => {
   window.postMessage({ source: "requestly:extension", action, payload }, window.location.href);
   if (sendResponseCallback) {
-    RQ.SessionRecorder.sendResponseCallbacks[action] = sendResponseCallback;
+    SessionRecorder.sendResponseCallbacks[action] = sendResponseCallback;
   }
 };
 
@@ -189,7 +189,7 @@ RQ.SessionRecorder.sendMessageToClient = (action, payload, sendResponseCallback)
  * Do not refer other function/variables from this function.
  * This function will be injected in website and will run in a different JS context.
  */
-RQ.SessionRecorder.bootstrapClient = (namespace) => {
+SessionRecorder.bootstrapClient = (namespace) => {
   window[namespace] = window[namespace] || {};
 
   const sendMessageToExtension = (action, payload) => {
@@ -226,7 +226,7 @@ RQ.SessionRecorder.bootstrapClient = (namespace) => {
   });
 };
 
-RQ.SessionRecorder.showToast = () => {
+SessionRecorder.showToast = () => {
   const rqToast = document.createElement("rq-toast");
   rqToast.classList.add("rq-element");
   rqToast.setAttribute("heading", "Requestly is recording session on this tab!");
@@ -248,8 +248,8 @@ RQ.SessionRecorder.showToast = () => {
   document.documentElement.appendChild(rqToast);
 };
 
-RQ.SessionRecorder.showManualModeRecordingWidget = () => {
-  let widget = RQ.SessionRecorder.getManualModeWidget();
+SessionRecorder.showManualModeRecordingWidget = () => {
+  let widget = SessionRecorder.getManualModeWidget();
 
   if (!widget) {
     widget = document.createElement("rq-session-recording-widget");
@@ -270,34 +270,34 @@ RQ.SessionRecorder.showManualModeRecordingWidget = () => {
     });
 
     widget.addEventListener("moved", (evt) => {
-      RQ.SessionRecorder.widgetPosition = evt.detail;
+      SessionRecorder.widgetPosition = evt.detail;
     });
   }
 
   const recordingLimitInMilliseconds = 5 * 60 * 1000; // 5 mins * 60 secs * 1000 ms
-  const recordingTime = Date.now() - RQ.SessionRecorder.recordingStartTime;
+  const recordingTime = Date.now() - SessionRecorder.recordingStartTime;
   const currentRecordingTime = recordingTime <= recordingLimitInMilliseconds ? recordingTime : null;
 
   widget.dispatchEvent(
     new CustomEvent("show", {
       detail: {
         currentRecordingTime,
-        position: RQ.SessionRecorder.widgetPosition,
+        position: SessionRecorder.widgetPosition,
       },
     })
   );
 };
 
-RQ.SessionRecorder.hideManualModeWidget = () => {
-  const widget = RQ.SessionRecorder.getManualModeWidget();
+SessionRecorder.hideManualModeWidget = () => {
+  const widget = SessionRecorder.getManualModeWidget();
   widget?.dispatchEvent(new CustomEvent("hide"));
 };
 
-RQ.SessionRecorder.getManualModeWidget = () => {
+SessionRecorder.getManualModeWidget = () => {
   return document.querySelector("rq-session-recording-widget");
 };
 
-RQ.SessionRecorder.showAutoModeRecordingWidget = () => {
+SessionRecorder.showAutoModeRecordingWidget = () => {
   const tagName = "rq-session-recording-auto-mode-widget";
   let widget = document.querySelector(tagName);
 
@@ -313,20 +313,20 @@ RQ.SessionRecorder.showAutoModeRecordingWidget = () => {
     });
 
     widget.addEventListener("moved", (evt) => {
-      RQ.SessionRecorder.widgetPosition = evt.detail;
+      SessionRecorder.widgetPosition = evt.detail;
     });
   }
 
   widget.dispatchEvent(
     new CustomEvent("show", {
       detail: {
-        position: RQ.SessionRecorder.widgetPosition,
+        position: SessionRecorder.widgetPosition,
       },
     })
   );
 };
 
-RQ.SessionRecorder.hideAutoModeWidget = () => {
+SessionRecorder.hideAutoModeWidget = () => {
   let widget = document.querySelector("rq-session-recording-auto-mode-widget");
   widget?.dispatchEvent(new CustomEvent("hide"));
 };

@@ -1,9 +1,9 @@
-RQ.RuleExecutionHandler = {};
-RQ.RuleExecutionHandler.appliedRuleIds = new Set();
-RQ.RuleExecutionHandler.implicitTestRuleFlowEnabled = false;
-RQ.RuleExecutionHandler.implictTestRuleWidgetConfig = null;
+const RuleExecutionHandler = (RQ.RuleExecutionHandler = {});
+RuleExecutionHandler.appliedRuleIds = new Set();
+RuleExecutionHandler.implicitTestRuleFlowEnabled = false;
+RuleExecutionHandler.implictTestRuleWidgetConfig = null;
 
-RQ.RuleExecutionHandler.sendRuleExecutionEvent = (rule) => {
+RuleExecutionHandler.sendRuleExecutionEvent = (rule) => {
   const eventName = "rule_executed";
   const eventParams = {
     rule_type: rule.ruleType,
@@ -14,40 +14,40 @@ RQ.RuleExecutionHandler.sendRuleExecutionEvent = (rule) => {
   RQ.ClientUtils.sendExecutionEventToBackground(eventName, eventParams);
 };
 
-RQ.RuleExecutionHandler.handleAppliedRule = (rule) => {
-  const isFirstExecution = !RQ.RuleExecutionHandler.appliedRuleIds.has(rule.id);
+RuleExecutionHandler.handleAppliedRule = (rule) => {
+  const isFirstExecution = !RuleExecutionHandler.appliedRuleIds.has(rule.id);
   if (isFirstExecution) {
-    RQ.RuleExecutionHandler.appliedRuleIds.add(rule.id);
-    RQ.RuleExecutionHandler.sendRuleExecutionEvent(rule);
+    RuleExecutionHandler.appliedRuleIds.add(rule.id);
+    RuleExecutionHandler.sendRuleExecutionEvent(rule);
   }
 
-  if (RQ.RuleExecutionHandler.implicitTestRuleFlowEnabled) {
-    RQ.RuleExecutionHandler.checkAppliedRuleAndNotifyWidget(rule);
+  if (RuleExecutionHandler.implicitTestRuleFlowEnabled) {
+    RuleExecutionHandler.checkAppliedRuleAndNotifyWidget(rule);
   } else {
-    RQ.RuleExecutionHandler.notifyRuleAppliedToExplicitWidget(rule.id);
+    RuleExecutionHandler.notifyRuleAppliedToExplicitWidget(rule.id);
   }
 };
 
-RQ.RuleExecutionHandler.setup = async () => {
+RuleExecutionHandler.setup = async () => {
   if (window !== window.top) {
     return;
   }
 
-  RQ.RuleExecutionHandler.fetchAndStoreImplicitTestRuleWidgetConfig();
+  RuleExecutionHandler.fetchAndStoreImplicitTestRuleWidgetConfig();
 
   chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
     switch (message.action) {
       case RQ.CLIENT_MESSAGES.NOTIFY_RULE_APPLIED:
-        RQ.RuleExecutionHandler.handleAppliedRule(message.rule);
+        RuleExecutionHandler.handleAppliedRule(message.rule);
         sendResponse();
         break;
 
       case RQ.CLIENT_MESSAGES.GET_APPLIED_RULE_IDS:
-        sendResponse(Array.from(RQ.RuleExecutionHandler.appliedRuleIds));
+        sendResponse(Array.from(RuleExecutionHandler.appliedRuleIds));
         break;
 
       case RQ.CLIENT_MESSAGES.SYNC_APPLIED_RULES:
-        RQ.RuleExecutionHandler.syncCachedAppliedRules(message.appliedRuleDetails, message.isConsoleLoggerEnabled);
+        RuleExecutionHandler.syncCachedAppliedRules(message.appliedRuleDetails, message.isConsoleLoggerEnabled);
         sendResponse();
         break;
 
@@ -58,12 +58,12 @@ RQ.RuleExecutionHandler.setup = async () => {
             showWidget: false,
           });
         }
-        RQ.RuleExecutionHandler.showExplicitTestRuleWidget(message.ruleId);
+        RuleExecutionHandler.showExplicitTestRuleWidget(message.ruleId);
         break;
 
       case RQ.CLIENT_MESSAGES.START_IMPLICIT_RULE_TESTING:
-        RQ.RuleExecutionHandler.implicitTestRuleFlowEnabled = true;
-        RQ.RuleExecutionHandler.showImplicitTestRuleWidget();
+        RuleExecutionHandler.implicitTestRuleFlowEnabled = true;
+        RuleExecutionHandler.showImplicitTestRuleWidget();
 
         break;
     }
@@ -72,17 +72,17 @@ RQ.RuleExecutionHandler.setup = async () => {
   });
 };
 
-RQ.RuleExecutionHandler.syncCachedAppliedRules = (appliedRuleDetails, isConsoleLoggerEnabled) => {
+RuleExecutionHandler.syncCachedAppliedRules = (appliedRuleDetails, isConsoleLoggerEnabled) => {
   appliedRuleDetails.forEach((appliedRuleDetail) => {
-    RQ.RuleExecutionHandler.handleAppliedRule(appliedRuleDetail.rule);
+    RuleExecutionHandler.handleAppliedRule(appliedRuleDetail.rule);
   });
 };
 
-RQ.RuleExecutionHandler.hasExecutedRules = () => {
-  return RQ.RuleExecutionHandler.appliedRuleIds.size > 0;
+RuleExecutionHandler.hasExecutedRules = () => {
+  return RuleExecutionHandler.appliedRuleIds.size > 0;
 };
 
-RQ.RuleExecutionHandler.showExplicitTestRuleWidget = async (ruleId) => {
+RuleExecutionHandler.showExplicitTestRuleWidget = async (ruleId) => {
   if (document.querySelector("rq-explicit-test-rule-widget")) {
     return;
   }
@@ -94,8 +94,8 @@ RQ.RuleExecutionHandler.showExplicitTestRuleWidget = async (ruleId) => {
   testRuleWidget.classList.add("rq-element");
   testRuleWidget.setAttribute("rule-id", ruleId);
   testRuleWidget.setAttribute("rule-name", ruleName);
-  testRuleWidget.setAttribute("applied-status", RQ.RuleExecutionHandler.appliedRuleIds.has(ruleId));
-  RQ.RuleExecutionHandler.setWidgetInfoText(testRuleWidget, ruleDetails);
+  testRuleWidget.setAttribute("applied-status", RuleExecutionHandler.appliedRuleIds.has(ruleId));
+  RuleExecutionHandler.setWidgetInfoText(testRuleWidget, ruleDetails);
 
   document.documentElement.appendChild(testRuleWidget);
 
@@ -108,7 +108,7 @@ RQ.RuleExecutionHandler.showExplicitTestRuleWidget = async (ruleId) => {
   });
 };
 
-RQ.RuleExecutionHandler.showImplicitTestRuleWidget = async () => {
+RuleExecutionHandler.showImplicitTestRuleWidget = async () => {
   if (document.querySelector("rq-implicit-test-rule-widget")) {
     return;
   }
@@ -129,15 +129,15 @@ RQ.RuleExecutionHandler.showImplicitTestRuleWidget = async () => {
   });
 
   testRuleWidget.addEventListener("rule_applied_listener_active", async () => {
-    const ruleIds = Array.from(RQ.RuleExecutionHandler.appliedRuleIds);
+    const ruleIds = Array.from(RuleExecutionHandler.appliedRuleIds);
     for (let ruleId of ruleIds) {
       const ruleDetails = await RQ.RulesStore.getRule(ruleId);
-      RQ.RuleExecutionHandler.checkAppliedRuleAndNotifyWidget(ruleDetails);
+      RuleExecutionHandler.checkAppliedRuleAndNotifyWidget(ruleDetails);
     }
   });
 };
 
-RQ.RuleExecutionHandler.setWidgetInfoText = (testRuleWidget, ruleDetails) => {
+RuleExecutionHandler.setWidgetInfoText = (testRuleWidget, ruleDetails) => {
   const { ruleType } = ruleDetails;
 
   switch (ruleType) {
@@ -162,7 +162,7 @@ RQ.RuleExecutionHandler.setWidgetInfoText = (testRuleWidget, ruleDetails) => {
   }
 };
 
-RQ.RuleExecutionHandler.notifyRuleAppliedToExplicitWidget = (ruleId) => {
+RuleExecutionHandler.notifyRuleAppliedToExplicitWidget = (ruleId) => {
   const explicitTestRuleWidget = document.querySelector("rq-explicit-test-rule-widget");
 
   if (explicitTestRuleWidget?.getAttribute("applied-status") === "false") {
@@ -180,7 +180,7 @@ RQ.RuleExecutionHandler.notifyRuleAppliedToExplicitWidget = (ruleId) => {
   }
 };
 
-RQ.RuleExecutionHandler.notifyRuleAppliedToImplicitWidget = (rule) => {
+RuleExecutionHandler.notifyRuleAppliedToImplicitWidget = (rule) => {
   const implicitTestRuleWidget = document.querySelector("rq-implicit-test-rule-widget");
 
   if (implicitTestRuleWidget) {
@@ -198,14 +198,14 @@ RQ.RuleExecutionHandler.notifyRuleAppliedToImplicitWidget = (rule) => {
   }
 };
 
-RQ.RuleExecutionHandler.fetchAndStoreImplicitTestRuleWidgetConfig = () => {
+RuleExecutionHandler.fetchAndStoreImplicitTestRuleWidgetConfig = () => {
   chrome.storage.local.get(RQ.STORAGE_KEYS.IMPLICIT_RULE_TESTING_WIDGET_CONFIG, function (result) {
-    RQ.RuleExecutionHandler.implictTestRuleWidgetConfig = result[RQ.STORAGE_KEYS.IMPLICIT_RULE_TESTING_WIDGET_CONFIG];
+    RuleExecutionHandler.implictTestRuleWidgetConfig = result[RQ.STORAGE_KEYS.IMPLICIT_RULE_TESTING_WIDGET_CONFIG];
   });
 };
 
-RQ.RuleExecutionHandler.checkAppliedRuleAndNotifyWidget = (rule) => {
-  const implicitTestRuleConfig = RQ.RuleExecutionHandler.implictTestRuleWidgetConfig;
+RuleExecutionHandler.checkAppliedRuleAndNotifyWidget = (rule) => {
+  const implicitTestRuleConfig = RuleExecutionHandler.implictTestRuleWidgetConfig;
 
   if (!implicitTestRuleConfig?.enabled) {
     return;
@@ -217,5 +217,5 @@ RQ.RuleExecutionHandler.checkAppliedRuleAndNotifyWidget = (rule) => {
     }
   }
 
-  RQ.RuleExecutionHandler.notifyRuleAppliedToImplicitWidget(rule);
+  RuleExecutionHandler.notifyRuleAppliedToImplicitWidget(rule);
 };
