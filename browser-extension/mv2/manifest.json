@@ -6,18 +6,6 @@
   "content_scripts": [
     {
       "matches": [
-        "https://app.requestly.io/*",
-        "https://app.requestly.com/*"
-      ],
-      "js": [
-        "src/shared/utils.js",
-        "src/shared/constants.js",
-        "src/pages/init.js"
-      ],
-      "run_at": "document_start"
-    },
-    {
-      "matches": [
         "http://*/*",
         "https://*/*"
       ],

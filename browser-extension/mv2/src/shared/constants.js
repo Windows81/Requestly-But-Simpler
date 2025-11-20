@@ -93,12 +93,6 @@ RQ.IMPLICIT_RULE_TESTING_WIDGET_VISIBILITY = {
   SPECIFIC: "specific",
 };
 
-/**
- * We are calling them as BLACK_LIST_DOMAINS
- * however the usage is code is as the URL containing these substrings, We don't touch those requests
- */
-RQ.BLACK_LIST_DOMAINS = ["requestly.in", "requestly.io", "requestly.com", "rq.in", "rq.io", "__rq"];
-
 RQ.OBJECT_TYPES = {
   GROUP: "group",
   RULE: "rule",
