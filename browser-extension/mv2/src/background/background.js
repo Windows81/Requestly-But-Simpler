@@ -1,4 +1,5 @@
-let BG = window.BG = {
+let BG;
+BG = window.BG = {
   Methods: {},
   statusSettings: {
     id: RQ.STORAGE_KEYS.REQUESTLY_SETTINGS,
@@ -14,7 +15,7 @@ let BG = window.BG = {
   },
   isAppOnline: false,
   extensionStatusContextMenuId: -1,
-  modifiedRequestsPool: new Queue(1000),
+  modifiedRequestsPool: new window.Queue(1000),
 };
 
 BG.TAB_SERVICE_DATA = {
@@ -43,7 +44,7 @@ BG.Methods.applyReplaceRule = function (rule, url, details) {
     pair = pairs[i];
     pair.from = pair.from || "";
 
-    if (pair.source && !RuleMatcher.matchRequestWithRuleSourceFilters(pair.source.filters, details)) {
+    if (pair.source && !RuleMatcherModule.matchRequestWithRuleSourceFilters(pair.source.filters, details)) {
       continue;
     }
 
@@ -51,7 +52,7 @@ BG.Methods.applyReplaceRule = function (rule, url, details) {
     if (
       pair.source &&
       pair.source.value &&
-      RuleMatcher.matchUrlWithRuleSource(pair.source, resultingUrl, details.tabId) === null
+      RuleMatcherModule.matchUrlWithRuleSource(pair.source, resultingUrl, details.tabId) === null
     ) {
       continue;
     }
@@ -142,8 +143,8 @@ BG.Methods.applyQueryParamRule = function (rule, url, details) {
 
     // If Source does not match, proceed with next pair
     if (
-      !RuleMatcher.matchRequestWithRuleSourceFilters(pair.source.filters, details) ||
-      RuleMatcher.matchUrlWithRuleSource(pair.source, url, details.tabId) === null
+      !RuleMatcherModule.matchRequestWithRuleSourceFilters(pair.source.filters, details) ||
+      RuleMatcherModule.matchUrlWithRuleSource(pair.source, url, details.tabId) === null
     ) {
       continue;
     }
@@ -172,8 +173,8 @@ BG.Methods.applyDelayRequestRule = function (rule, url, details) {
 
     // If Source does not match, proceed with next pair
     if (
-      !RuleMatcher.matchRequestWithRuleSourceFilters(pair.source.filters, details) ||
-      RuleMatcher.matchUrlWithRuleSource(pair.source, url, details.tabId) === null
+      !RuleMatcherModule.matchRequestWithRuleSourceFilters(pair.source.filters, details) ||
+      RuleMatcherModule.matchUrlWithRuleSource(pair.source, url, details.tabId) === null
     ) {
       continue;
     }
@@ -182,12 +183,12 @@ BG.Methods.applyDelayRequestRule = function (rule, url, details) {
     if (
       pair.source &&
       pair.source.value &&
-      RuleMatcher.matchUrlWithRuleSource(pair.source, resultingUrl, details.tabId) === null
+      RuleMatcherModule.matchUrlWithRuleSource(pair.source, resultingUrl, details.tabId) === null
     ) {
       continue;
     }
 
-    resultingUrl = RuleMatcher.matchValueForPredefinedFunctions(resultingUrl, details);
+    resultingUrl = RuleMatcherModule.matchValueForPredefinedFunctions(resultingUrl, details);
 
     delay = pair.delay;
 
@@ -340,7 +341,7 @@ BG.Methods.modifyHeaders = function (originalHeaders, headersTarget, details) {
       rulePair = rulePairs[index];
 
       if (rule.version > 1) {
-        if (!RuleMatcher.matchRequestWithRuleSourceFilters(rulePair.source.filters, details)) {
+        if (!RuleMatcherModule.matchRequestWithRuleSourceFilters(rulePair.source.filters, details)) {
           continue;
         }
         modifications = rulePair.modifications?.[headersTarget] || [];
@@ -360,7 +361,7 @@ BG.Methods.modifyHeaders = function (originalHeaders, headersTarget, details) {
           continue;
         }
 
-        if (!RuleMatcher.matchRequestWithRuleSourceFilters(rulePair.source.filters, details)) {
+        if (!RuleMatcherModule.matchRequestWithRuleSourceFilters(rulePair.source.filters, details)) {
           continue;
         }
 
@@ -368,12 +369,12 @@ BG.Methods.modifyHeaders = function (originalHeaders, headersTarget, details) {
         // In UA Rule Type, we match Source Object with mainFrame as well
         if (
           rulePair.source &&
-          RuleMatcher.matchUrlWithRuleSource(rulePair.source, url, details.tabId) === null &&
+          RuleMatcherModule.matchUrlWithRuleSource(rulePair.source, url, details.tabId) === null &&
           !(
             ruleType === RQ.RULE_TYPES.USERAGENT &&
             rulePair.source.requestType === RQ.REQUEST_TYPES.MAIN_FRAME &&
             mainFrameUrl &&
-            RuleMatcher.matchUrlWithRuleSource(rulePair.source, mainFrameUrl, details.tabId) !== null
+            RuleMatcherModule.matchUrlWithRuleSource(rulePair.source, mainFrameUrl, details.tabId) !== null
           )
         ) {
           continue;
@@ -382,7 +383,10 @@ BG.Methods.modifyHeaders = function (originalHeaders, headersTarget, details) {
         isRuleApplied = true;
 
         // Check if user has used predefinedFunction in (add/modify) header value
-        var valueWithPreDefFunctionsApplied = RuleMatcher.matchValueForPredefinedFunctions(modification.value, details);
+        var valueWithPreDefFunctionsApplied = RuleMatcherModule.matchValueForPredefinedFunctions(
+          modification.value,
+          details
+        );
 
         switch (modification.type) {
           case RQ.MODIFICATION_TYPES.ADD:
@@ -458,7 +462,7 @@ BG.Methods.getMatchingRulePairs = function (sourceUrl, ruleType, requestDetails)
     })
     .reduce(function (matchedRulePairsSoFar, enabledRule) {
       var matchedRulePairs = enabledRule.pairs.filter(function (pair) {
-        return RuleMatcher.matchUrlWithRuleSource(pair.source, sourceUrl, requestDetails.tabId) !== null;
+        return RuleMatcherModule.matchUrlWithRuleSource(pair.source, sourceUrl, requestDetails.tabId) !== null;
       });
       return matchedRulePairsSoFar.concat(matchedRulePairs);
     }, []);
@@ -494,7 +498,7 @@ BG.Methods.getMatchingRules = function (sourceUrl, ruleType, details) {
   return BG.Methods.getEnabledRules().filter(function (rule) {
     return (
       (!ruleType || rule.ruleType === ruleType) &&
-      RuleMatcher.matchUrlWithRulePairs(rule.pairs, sourceUrl, details) !== null
+      RuleMatcherModule.matchUrlWithRulePairs(rule.pairs, sourceUrl, details) !== null
     );
   });
 };
@@ -539,8 +543,8 @@ BG.Methods.modifyUrl = function (details) {
           delete rule.destination;
         }
 
-        processedUrl = RuleMatcher.matchUrlWithRulePairs(rule.pairs, requestUrl, details);
-        processedUrl = RuleMatcher.matchValueForPredefinedFunctions(processedUrl, details);
+        processedUrl = RuleMatcherModule.matchUrlWithRulePairs(rule.pairs, requestUrl, details);
+        processedUrl = RuleMatcherModule.matchValueForPredefinedFunctions(processedUrl, details);
 
         break;
 
@@ -561,7 +565,7 @@ BG.Methods.modifyUrl = function (details) {
           delete rule.source;
         }
 
-        processedUrl = RuleMatcher.matchUrlWithRulePairs(rule.pairs, requestUrl, details);
+        processedUrl = RuleMatcherModule.matchUrlWithRulePairs(rule.pairs, requestUrl, details);
         if (processedUrl !== null) {
           processedUrl = "javascript:";
         }
@@ -569,13 +573,13 @@ BG.Methods.modifyUrl = function (details) {
 
       case RQ.RULE_TYPES.REPLACE:
         processedUrl = BG.Methods.applyReplaceRule(rule, requestUrl, details);
-        processedUrl = RuleMatcher.matchValueForPredefinedFunctions(processedUrl, details);
+        processedUrl = RuleMatcherModule.matchValueForPredefinedFunctions(processedUrl, details);
 
         break;
 
       case RQ.RULE_TYPES.QUERYPARAM:
         processedUrl = BG.Methods.applyQueryParamRule(rule, requestUrl, details);
-        processedUrl = RuleMatcher.matchValueForPredefinedFunctions(processedUrl, details);
+        processedUrl = RuleMatcherModule.matchValueForPredefinedFunctions(processedUrl, details);
 
         break;
 
@@ -983,11 +987,11 @@ BG.Methods.addListenerForExtensionMessages = function () {
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     switch (message.action) {
       case RQ.CLIENT_MESSAGES.ADD_EVENT:
-        EventActions.queueEventToWrite(message.payload);
+        RQ.EventActions.queueEventToWrite(message.payload);
         break;
 
       case RQ.CLIENT_MESSAGES.ADD_EXECUTION_EVENT:
-        EventActions.queueExecutionEventToWrite(message.payload);
+        RQ.EventActions.queueExecutionEventToWrite(message.payload);
         break;
 
       case RQ.CLIENT_MESSAGES.GET_SCRIPT_RULES:
@@ -1261,7 +1265,7 @@ BG.Methods.getSessionRecordingConfig = async (url) => {
   const shouldRecord =
     BG.statusSettings.isExtensionEnabled &&
     (isAutoRecordingActive ?? true) &&
-    pageSources.some((pageSource) => RuleMatcher.matchUrlWithPageSource(pageSource, url) !== null);
+    pageSources.some((pageSource) => RuleMatcherModule.matchUrlWithPageSource(pageSource, url) !== null);
 
   return shouldRecord ? sessionRecordingConfig : null;
 };
@@ -1294,19 +1298,19 @@ BG.Methods.onAppLoadedNotification = () => {
 
   RQ.StorageService.getRecord(RQ.STORAGE_KEYS.USE_EVENTS_ENGINE).then((useEngine) => {
     if (useEngine === false) {
-      EventActions.stopPeriodicEventWriter();
+      RQ.EventActions.stopPeriodicEventWriter();
     } else {
-      EventActions.startPeriodicEventWriter();
+      RQ.EventActions.startPeriodicEventWriter();
     }
   });
 
   RQ.StorageService.getRecord(RQ.STORAGE_KEYS.SEND_EXECUTION_EVENTS).then(async (sendExecutionEvents) => {
     if (sendExecutionEvents === false) {
-      await EventActions.clearExecutionEvents();
+      await RQ.EventActions.clearExecutionEvents();
     }
   });
 
-  EventActions.sendExtensionEvents();
+  RQ.EventActions.sendExtensionEvents();
 };
 
 BG.Methods.onClientPageLoad = (tab) => {
@@ -1859,7 +1863,7 @@ BG.Methods.init = function () {
 
     // Fetch records
     RQ.StorageService.fetchRecords().then(BG.Methods.readExtensionStatus);
-    EventActions.setEventsCount();
+    RQ.EventActions.setEventsCount();
   });
 
   // Add Listener to reply to requests from extension content scripts or popup
@@ -1871,7 +1875,7 @@ BG.Methods.init = function () {
 
   BG.Methods.listenCommands();
 
-  EventActions.startPeriodicEventWriter();
+  RQ.EventActions.startPeriodicEventWriter();
 };
 
 try {

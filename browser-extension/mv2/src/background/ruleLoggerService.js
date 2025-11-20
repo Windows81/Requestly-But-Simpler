@@ -8,37 +8,17 @@
   }
  */
 
-var RuleLoggerService = function () {
-  this.construct.apply(this, arguments);
-};
-
-RuleLoggerService.prototype = {
-  construct: function () {
-    const that = this;
-
+class RuleLoggerService {
+  constructor() {
     this.logs = {};
     this._listeners = {};
 
     if (chrome.tabs) {
       chrome.tabs.onRemoved.addListener(this.clearLogsForTab.bind(this));
     }
-  },
+  }
 
-  /**
-   * Consumer of RuleLoggerService can add listener and this will invoke callback whenever logs for a tab are changed
-   * @param tabId
-   * @param callback
-   */
-  addChangeListener: function (tabId, callback) {
-    if (typeof callback !== "function") {
-      return;
-    }
-
-    this._listeners[tabId] = this._listeners[tabId] || [];
-    this._listeners[tabId].push(callback);
-  },
-
-  removeChangeListener: function (tabId, callback) {
+  removeChangeListener(tabId, callback) {
     if (typeof callback !== "function" || !this._listeners[tabId]) {
       return;
     }
@@ -47,23 +27,23 @@ RuleLoggerService.prototype = {
     if (listenerIndex >= 0) {
       this._listeners[tabId].splice(listenerIndex, 1);
     }
-  },
+  }
 
-  _invokeListeners: function (tabId) {
+  _invokeListeners(tabId) {
     if (this._listeners[tabId] && this._listeners[tabId].length) {
       this._listeners[tabId].forEach((listener) => listener());
     }
-  },
+  }
 
-  _hasUpdates: function (newLogs, oldLogs) {
+  _hasUpdates(newLogs, oldLogs) {
     if ((!newLogs && oldLogs) || (newLogs && !oldLogs)) {
       return true;
     }
 
     return JSON.stringify(newLogs) !== JSON.stringify(oldLogs);
-  },
+  }
 
-  sendLogToDevTools: function (rule, requestDetails, description) {
+  sendLogToDevTools(rule, requestDetails, description) {
     const log = {
       id: this._generateLogId(),
       timestamp: Date.now(),
@@ -78,9 +58,9 @@ RuleLoggerService.prototype = {
 
     this.addLogToDomain(tabId, domain, log);
     this._invokeListeners(tabId);
-  },
+  }
 
-  addLogToDomain: function (tabId, domain, log) {
+  addLogToDomain(tabId, domain, log) {
     let domainLogs = this.logs[tabId] && this.logs[tabId][domain];
 
     if (domainLogs) {
@@ -95,9 +75,9 @@ RuleLoggerService.prototype = {
       // To optimize, we discard previous domain logs. But as a downside, log for redirect rule applied on last page will be lost.
       this.logs[tabId] = { [domain]: [log] };
     }
-  },
+  }
 
-  getLogsByTabId: function (tabId, populateRuleData) {
+  getLogsByTabId(tabId, populateRuleData) {
     const logs = this.logs[tabId] || {};
 
     if (populateRuleData) {
@@ -110,9 +90,9 @@ RuleLoggerService.prototype = {
     }
 
     return logs;
-  },
+  }
 
-  clearInactiveTabLogs: function () {
+  clearInactiveTabLogs() {
     if (!window.tabService) {
       return;
     }
@@ -123,9 +103,9 @@ RuleLoggerService.prototype = {
         delete this._listeners[tabId];
       }
     }
-  },
+  }
 
-  clearLogsForDomain: function (tabId, domain) {
+  clearLogsForDomain(tabId, domain) {
     if (this.logs[tabId] && this.logs[tabId][domain]) {
       delete this.logs[tabId][domain];
 
@@ -133,9 +113,9 @@ RuleLoggerService.prototype = {
         delete this.logs[tabId];
       }
     }
-  },
+  }
 
-  clearLogsForTab: function (tabId) {
+  clearLogsForTab(tabId) {
     if (this.logs[tabId]) {
       delete this.logs[tabId];
     }
@@ -146,9 +126,9 @@ RuleLoggerService.prototype = {
 
     // Whenever tab is closed, also remove any inactive logs tab
     this.clearInactiveTabLogs();
-  },
+  }
 
-  _generateLogId: function () {
+  _generateLogId() {
     return Math.ceil(Math.random() * 100) + Date.now();
-  },
-};
+  }
+}
