@@ -1,7 +1,7 @@
-class ExtensionIconManager {
-  #isExtensionDisabled = false;
+RQ.extensionIconManager = class {
+  static #isExtensionDisabled = false;
 
-  #icons = {
+  static #icons = {
     DEFAULT: "/resources/images/48x48.png",
     DISABLED: "/resources/images/48x48_greyscale.png",
     RULE_EXECUTED: "/resources/images/48x48_green.png",
@@ -9,24 +9,24 @@ class ExtensionIconManager {
     RULE_EXECUTED_WITH_REC: "/resources/images/48x48_green_rec.png",
   };
 
-  #CONSTANTS = {
+  static #CONSTANTS = {
     PAGE_DATA_ICON_CONFIG: "extensionIconConfig",
   };
 
-  constructor() {
+  static {
     chrome.tabs.onUpdated.addListener((tabId) => {
       this.#updateIconState(tabId);
     });
   }
 
-  #getDefaultConfig() {
+  static #getDefaultConfig() {
     return {
       ruleExecuted: false,
       isRecording: false,
     };
   }
 
-  #getIcon(config) {
+  static #getIcon(config) {
     if (this.#isExtensionDisabled) {
       return this.#icons.DISABLED;
     }
@@ -46,7 +46,7 @@ class ExtensionIconManager {
     return this.#icons.DEFAULT;
   }
 
-  #updateIconState(tabId, newConfigKey, newConfigValue) {
+  static #updateIconState(tabId, newConfigKey, newConfigValue) {
     let config =
       window.tabService.getPageData(tabId, this.#CONSTANTS.PAGE_DATA_ICON_CONFIG) || this.#getDefaultConfig();
 
@@ -58,36 +58,34 @@ class ExtensionIconManager {
     window.tabService.setExtensionIcon(this.#getIcon(config), tabId);
   }
 
-  #updateIconStateForAllTabs() {
+  static #updateIconStateForAllTabs() {
     const tabsWithIconConfig = window.tabService.getTabsWithPageDataFilter((pageData) => {
       return !!pageData[this.#CONSTANTS.PAGE_DATA_ICON_CONFIG];
     });
     tabsWithIconConfig.forEach((tab) => this.#updateIconState(tab.id));
   }
 
-  markExtensionEnabled = () => {
+  static markExtensionEnabled = () => {
     this.#isExtensionDisabled = false;
     window.tabService.setExtensionIcon(this.#icons.DEFAULT);
     this.#updateIconStateForAllTabs();
   };
 
-  markExtensionDisabled = () => {
+  static markExtensionDisabled = () => {
     this.#isExtensionDisabled = true;
     window.tabService.setExtensionIcon(this.#icons.DISABLED);
     this.#updateIconStateForAllTabs();
   };
 
-  markRuleExecuted(tabId) {
+  static markRuleExecuted(tabId) {
     this.#updateIconState(tabId, "ruleExecuted", true);
   }
 
-  markRecording(tabId) {
+  static markRecording(tabId) {
     this.#updateIconState(tabId, "isRecording", true);
   }
 
-  markNotRecording(tabId) {
+  static markNotRecording(tabId) {
     this.#updateIconState(tabId, "isRecording", false);
   }
-}
-
-RQ.extensionIconManager = new ExtensionIconManager();
+};

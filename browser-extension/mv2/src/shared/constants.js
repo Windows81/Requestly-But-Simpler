@@ -1,3 +1,5 @@
+window.RQ ??= {};
+
 RQ.CONSTANTS = RQ.CONSTANTS || {};
 
 RQ.CONSTANTS.RULES_PAGE_URL = RQ.configs.WEB_URL + "/rules/";

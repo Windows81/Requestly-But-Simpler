@@ -1,4 +1,4 @@
-class TabService {
+window.tabService = class {
   map = {};
 
   dataScope = {
@@ -234,9 +234,4 @@ class TabService {
       setIconSynchronizer.then(() => this.promisifiedSetIcon(tabId, path))
     );
   }
-}
-
-// Create only single instance of TabService
-if (typeof window.tabService === "undefined") {
-  window.tabService = new TabService();
-}
+};

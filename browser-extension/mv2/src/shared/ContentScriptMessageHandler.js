@@ -1,4 +1,4 @@
-window.RQ = window.RQ || {};
+window.RQ ??= {};
 
 RQ.ContentScriptMessageHandler = {
   eventCallbackMap: {},
@@ -82,15 +82,15 @@ RQ.ContentScriptMessageHandler = {
 
       // Process actions
       if (event.data.action === "GET_STORAGE_TYPE") {
-        StorageService.getStorageType().then((storageType) => {
+        RQ.StorageService.getStorageType().then((storageType) => {
           that.sendResponse(event.data, { storageType });
         });
       } else if (event.data.action === "SET_STORAGE_TYPE") {
-        StorageService.setStorageType(event.data.storageType).then(() => {
+        RQ.StorageService.setStorageType(event.data.storageType).then(() => {
           that.sendResponse(event.data, { success: true });
         });
       } else if (event.data.action === "GET_STORAGE_INFO") {
-        StorageService.getStorageType().then((storageType) => {
+        RQ.StorageService.getStorageType().then((storageType) => {
           chrome.storage[storageType].get(null, (superObject) => {
             const storageCachedRecords = [];
             for (let key in superObject) {
@@ -107,37 +107,37 @@ RQ.ContentScriptMessageHandler = {
           });
         });
       } else if (event.data.action === "GET_STORAGE_SUPER_OBJECT") {
-        StorageService.getStorageType().then((storageType) => {
+        RQ.StorageService.getStorageType().then((storageType) => {
           chrome.storage[storageType].get(null, (superObject) => {
             that.sendResponse(event.data, superObject);
           });
         });
       } else if (event.data.action === "GET_STORAGE_OBJECT") {
-        StorageService.getStorageType().then((storageType) => {
+        RQ.StorageService.getStorageType().then((storageType) => {
           chrome.storage[storageType].get(event.data.key, (obj) => {
             that.sendResponse(event.data, obj[event.data.key]);
           });
         });
       } else if (event.data.action === "SAVE_STORAGE_OBJECT") {
-        StorageService.getStorageType().then((storageType) => {
+        RQ.StorageService.getStorageType().then((storageType) => {
           chrome.storage[storageType].set(event.data.object, () => {
             that.sendResponse(event.data);
           });
         });
       } else if (event.data.action === "REMOVE_STORAGE_OBJECT") {
-        StorageService.getStorageType().then((storageType) => {
+        RQ.StorageService.getStorageType().then((storageType) => {
           chrome.storage[storageType].remove(event.data.key, () => {
             that.sendResponse(event.data);
           });
         });
       } else if (event.data.action === "CLEAR_STORAGE") {
-        StorageService.getStorageType().then((storageType) => {
+        RQ.StorageService.getStorageType().then((storageType) => {
           chrome.storage[storageType].clear(() => {
             that.sendResponse(event.data);
           });
         });
       } else if (event.data.action === "GET_USER_INFO") {
-        StorageService.getRecordFromStorage("user_info", "sync").then((obj) =>
+        RQ.StorageService.getRecordFromStorage("user_info", "sync").then((obj) =>
           that.sendResponse(event.data, obj || {})
         );
       } else if (

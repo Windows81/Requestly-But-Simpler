@@ -1,8 +1,8 @@
 const generateObjectId = () => {
-  return Math.random().toString(36).substr(2, 5);
+  return Math.random().toString(36).substring(2, 5);
 };
 
-class ExtensionStorageClient {
+window.ExtensionStorageClient = class {
   /** get */
   async getStorageObject(key) {
     Logger.log("[ExtensionStorageClient] getStorageObject", { key });
@@ -49,24 +49,22 @@ class ExtensionStorageClient {
       chrome.runtime.sendMessage({ action: "CLEAR_STORAGE" }, resolve);
     });
   }
-}
+};
 
-class StorageServiceWrapper {
-  constructor() {
-    this.appMode = RQ.APP_MODES.EXTENSION;
-    this.StorageHelper = new ExtensionStorageClient();
-    this.primaryKeys = ["objectType", "ruleType"];
+window.ClientStorageService = class {
+  static appMode = RQ.APP_MODES.EXTENSION;
+  static StorageHelper = new ExtensionStorageClient();
+  static primaryKeys = ["objectType", "ruleType"];
 
-    this.saveRecordWithID = this.saveRecordWithID.bind(this);
-    this.saveRecord = this.saveRecord.bind(this);
-    this.getRecord = this.getRecord.bind(this);
-    this.getRecords = this.getRecords.bind(this);
+  static saveRecordWithID = this.saveRecordWithID.bind(this);
+  static saveRecord = this.saveRecord.bind(this);
+  static getRecord = this.getRecord.bind(this);
+  static getRecords = this.getRecords.bind(this);
 
-    this.transactionQueue = new Set(); // promises of transactions that are still pending
-    this.transactionLedger = new Map(); // optional: helpful only in putting console logs
-  }
+  static transactionQueue = new Set(); // promises of transactions that are still pending
+  static transactionLedger = new Map(); // optional: helpful only in putting console logs
 
-  trackPromise(promise) {
+  static trackPromise(promise) {
     const id = generateObjectId();
     console.log("promise id", id);
 
@@ -83,17 +81,17 @@ class StorageServiceWrapper {
     });
   }
 
-  async waitForAllTransactions() {
+  static async waitForAllTransactions() {
     await Promise.allSettled([...this.transactionQueue]);
     this.transactionQueue.clear();
     this.transactionLedger.clear();
   }
 
-  getAllRecords() {
+  static getAllRecords() {
     return this.StorageHelper.getStorageSuperObject();
   }
 
-  hasPrimaryKey(record) {
+  static hasPrimaryKey(record) {
     if (typeof record === "object" && !Array.isArray(record) && record !== null) {
       for (let index = 0; index < this.primaryKeys.length; index++) {
         if (typeof record[this.primaryKeys[index]] !== "undefined") {
@@ -104,7 +102,7 @@ class StorageServiceWrapper {
     return false;
   }
 
-  getRecords(objectType) {
+  static getRecords(objectType) {
     const self = this;
     return new Promise((resolve) => {
       this.StorageHelper.getStorageSuperObject().then((superObject) => {
@@ -120,7 +118,7 @@ class StorageServiceWrapper {
     });
   }
 
-  filterRecordsByType(records, requestedObjectType) {
+  static filterRecordsByType(records, requestedObjectType) {
     if (!requestedObjectType) {
       return records;
     }
@@ -131,7 +129,7 @@ class StorageServiceWrapper {
     });
   }
 
-  async saveRecord(object) {
+  static async saveRecord(object) {
     await this.StorageHelper.saveStorageObject(object); // writes to Extension or Desktop storage
     return Object.values(object)[0]; // why???
   }
@@ -143,7 +141,7 @@ class StorageServiceWrapper {
    * @param {string} options.workspaceId workspace identifier
    * @returns a promise on save of the rule or group
    */
-  async saveRuleOrGroup(ruleOrGroup, options = {}) {
+  static async saveRuleOrGroup(ruleOrGroup, options = {}) {
     const formattedObject = {
       [ruleOrGroup.id]: {
         ...ruleOrGroup,
@@ -155,7 +153,7 @@ class StorageServiceWrapper {
     return promise;
   }
 
-  async saveMultipleRulesOrGroups(array, options = {}) {
+  static async saveMultipleRulesOrGroups(array, options = {}) {
     const formattedObject = {};
     array.forEach((object) => {
       if (object && object.id) formattedObject[object.id] = object;
@@ -170,15 +168,15 @@ class StorageServiceWrapper {
    * @param object
    * @returns {Promise<any>}
    */
-  async saveRecordWithID(object) {
+  static async saveRecordWithID(object) {
     await this.StorageHelper.saveStorageObject({ [object.id]: object });
   }
 
-  getRecord(key) {
+  static getRecord(key) {
     return this.StorageHelper.getStorageObject(key);
   }
 
-  async removeRecord(key) {
+  static async removeRecord(key) {
     try {
       this.trackPromise(this.StorageHelper.removeStorageObject(key));
     } catch (error) {
@@ -186,7 +184,7 @@ class StorageServiceWrapper {
     }
   }
 
-  async removeRecords(array) {
+  static async removeRecords(array) {
     try {
       this.trackPromise(this.StorageHelper.removeStorageObjects(array));
       return removalResult;
@@ -196,27 +194,24 @@ class StorageServiceWrapper {
     }
   }
 
-  removeRecordsWithoutSyncing(array) {
+  static removeRecordsWithoutSyncing(array) {
     return this.StorageHelper.removeStorageObjects(array);
   }
 
-  printRecords() {
+  static printRecords() {
     this.StorageHelper.getStorageSuperObject().then(function (superObject) {
       console.log(superObject);
     });
   }
 
-  async clearDB() {
+  static async clearDB() {
     await this.StorageHelper.clearStorage();
   }
 
-  saveConsoleLoggerState(state) {
+  static saveConsoleLoggerState(state) {
     const consoleLoggerState = {
       [RQ.CONSOLE_LOGGER_ENABLED]: state,
     };
     this.StorageHelper.saveStorageObject(consoleLoggerState);
   }
-}
-
-window.ExtensionStorageClient = ExtensionStorageClient;
-window.ClientStorageService = new StorageServiceWrapper();
+};

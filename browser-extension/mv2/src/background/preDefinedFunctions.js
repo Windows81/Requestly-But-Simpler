@@ -1,4 +1,4 @@
-window.RQ = window.RQ || {};
+window.RQ ??= {};
 RQ.PreDefinedFunctions = {};
 
 /**

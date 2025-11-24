@@ -6,7 +6,7 @@
  *  .then(() => ...);
  */
 
-window.StorageService = class {
+RQ.StorageService = class {
   /**
    *
    * @param options StorageService constructor options
@@ -16,9 +16,9 @@ window.StorageService = class {
    */
   static getInstance(options, context) {
     return new Promise((resolve) => {
-      StorageService.getStorageType().then((storageType) => {
+      this.getStorageType().then((storageType) => {
         options.DB = storageType;
-        context.StorageService = new StorageService(options);
+        context.StorageService = new this(options);
 
         resolve();
       });
@@ -35,17 +35,11 @@ window.StorageService = class {
     if (this.cachingEnabled) {
       chrome.storage.onChanged.addListener(this.updateRecords.bind(this));
     }
-
-    this.saveRecordWithID = this.saveRecordWithID.bind(this);
-    this.saveRecord = this.saveRecord.bind(this);
-    this.getRecord = this.getRecord.bind(this);
-    this.getRecords = this.getRecords.bind(this);
-    this.fetchRecords = this.fetchRecords.bind(this);
   }
 
   static getStorageType() {
     return new Promise((resolve) => {
-      StorageService.getRecordFromStorage("storageType", "sync").then((storageType) => {
+      this.getRecordFromStorage("storageType", "sync").then((storageType) => {
         // If there is no storageType stored, fallback to default setting
         resolve(storageType || RQ.configs.storageType);
       });
@@ -53,7 +47,7 @@ window.StorageService = class {
   }
 
   static setStorageType(newStorageType) {
-    return StorageService.saveRecordInStorage({ storageType: newStorageType }, "sync");
+    return this.saveRecordInStorage({ storageType: newStorageType }, "sync");
   }
 
   fetchRecords(objectType, forceFetch) {
